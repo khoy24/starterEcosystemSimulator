@@ -7,6 +7,7 @@
 #include <time.h>
 
 land terrain[HEIGHT][WIDTH];
+void initializerabbits();
 // Generates terrain for the environment. Consists of grass, a lake, and bushes (food source)
 void generate_terrain(){
 
@@ -56,4 +57,17 @@ void generate_terrain(){
 
     }
 
+    initializerabbits();
+
+}
+
+void initializerabbits(){
+
+    int i,j;
+    for (i=0; i < HEIGHT; i++){
+        for (j=0; j < WIDTH; j++){
+            rabbits[i][j].y = i;
+            rabbits[i][j].x = j;
+        }
+    }
 }

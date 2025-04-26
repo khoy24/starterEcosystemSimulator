@@ -6,6 +6,7 @@
 #include <iostream>
 #include <time.h>
 
+void print_terrain();
 
 int main(int argc, char *argv[]){
 
@@ -30,12 +31,33 @@ int main(int argc, char *argv[]){
     generate_terrain();
     spawnRabbits();
 
+    // usleep(250000);
+    int alive = 10;
+    while (alive > 0){
+        //move rabbits
+        moveRabbits();
+        print_terrain();
+        refresh();
+        usleep(250000);
+        alive --;
+    }
 
+    refresh();
+    //need this so that it waits for a key press to close the window. 
+    getch();
+    endwin();
+    return 1;
+
+}
+
+
+void print_terrain(){
+    //print the terrain
     int i,j;
     for (i=0; i < HEIGHT; i++){
         for (j=0; j < WIDTH; j++){
             //print rabbits first
-            if (rabbits[i][j].symbol!='X'){
+            if (rabbits[i][j].symbol!=' '){
                 attron(COLOR_PAIR(rabbits[i][j].color));
                 mvaddch(1 + i, 20 + j, rabbits[i][j].symbol);
                 attroff(COLOR_PAIR(rabbits[i][j].color));
@@ -50,12 +72,4 @@ int main(int argc, char *argv[]){
         // std::cout << std::endl;
         mvaddch(1 + i, 20 + j, '\n');
     }
-
-
-    refresh();
-    //need this so that it waits for a key press to close the window. 
-    getch();
-    endwin();
-    return 1;
-
 }
