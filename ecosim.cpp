@@ -28,25 +28,34 @@ int main(int argc, char *argv[]){
     init_pair(7, COLOR_CYAN, COLOR_BLACK);  
 
     generate_terrain();
+    spawnRabbits();
+
 
     int i,j;
     for (i=0; i < HEIGHT; i++){
         for (j=0; j < WIDTH; j++){
-            attron(COLOR_PAIR(terrain[i][j].color));
-            mvaddch(1 + i, 20 + j, terrain[i][j].symbol);
-            attroff(COLOR_PAIR(terrain[i][j].color));
+            //print rabbits first
+            if (rabbits[i][j].symbol!='X'){
+                attron(COLOR_PAIR(rabbits[i][j].color));
+                mvaddch(1 + i, 20 + j, rabbits[i][j].symbol);
+                attroff(COLOR_PAIR(rabbits[i][j].color));
+            } else {
+                attron(COLOR_PAIR(terrain[i][j].color));
+                mvaddch(1 + i, 20 + j, terrain[i][j].symbol);
+                attroff(COLOR_PAIR(terrain[i][j].color));
+            }
+
             // std::cout << terrain[i][j].symbol;
         }
         // std::cout << std::endl;
         mvaddch(1 + i, 20 + j, '\n');
     }
 
+
     refresh();
     //need this so that it waits for a key press to close the window. 
     getch();
     endwin();
-
     return 1;
 
 }
-

@@ -19,8 +19,7 @@ void generate_terrain(){
         }
     }
 
-    // water
-
+    // water ///////////////////////////////////////////////////////////////////////////////////////
     int watercount = 0; //keeps track of number of water tiles placed
 
     //makes the terrain covered in at least 1/5s water of small lakes
@@ -40,11 +39,11 @@ void generate_terrain(){
         }
     }
 
-    // food
+    // food ////////////////////////////////////////////////////////////////////////////////////////
 
     // cover the terrain with bushes of food. 
     int bushcount = 0;
-    while (bushcount < (HEIGHT * WIDTH / 8)){
+    while (bushcount < (HEIGHT * WIDTH / 9)){
         //choose a random starting point
         int x = rand() % WIDTH;
         int y = rand() % HEIGHT;

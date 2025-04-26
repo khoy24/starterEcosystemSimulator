@@ -1,5 +1,5 @@
-ecosim: ecosim.o terrain.o
-	g++ ecosim.cpp terrain.cpp -o ecosim -Wall -Werror -lm -lncurses
+ecosim: ecosim.o terrain.o rabbits.o
+	g++ ecosim.cpp terrain.cpp rabbits.cpp -o ecosim -Wall -Werror -lm -lncurses
 
 # -lm links math library for use of sqrtf
 ecosim.o: ecosim.cpp ecosim.h
@@ -8,5 +8,8 @@ ecosim.o: ecosim.cpp ecosim.h
 terrain.o: terrain.cpp
 	g++ -g terrain.cpp -o terrain -Wall -Werror -lm -c
 
+rabbits.o: rabbits.cpp
+	g++ -g rabbits.cpp -o rabbits -Wall -Werror -lm -c
+
 clean: 
-	rm -f *.o *~ ecosim terrain
+	rm -f *.o *~ ecosim terrain rabbits
