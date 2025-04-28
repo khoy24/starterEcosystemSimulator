@@ -65,6 +65,10 @@ int main(int argc, char *argv[]) {
         daysleft--;
     }
 
+    //can pick what graphs to display
+    clear();
+    
+
     plotpopulation(); 
 
     getch();
@@ -150,7 +154,22 @@ void hungerandthirst(){
         int prevhunger = r->hunger;
         int prevthirst = r->thirst;
         if (terrain[r->y][r->x].symbol!='#'){
-            r->hunger -= 20;
+            r->hunger -= 10;
+        }
+        //if there isn't water nearby, the rabbit gets thirsty
+        int i,j;
+        int drank = 0;
+        for (i=r->y-1; i < r->y+2 && i < HEIGHT; i++){
+            for (j=r->x-1; j < r->x + 2 && j < WIDTH; j++){
+                if (i>= 0 && j>= 0 && terrain[i][j].symbol!='~'){
+                    r->thirst -= 10;
+                    drank = 1;
+                    break;
+                }
+            }
+            if (drank == 1){
+                break;
+            }
         }
         if (prevthirst <= 0 || prevhunger <= 0){
             rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
@@ -158,18 +177,14 @@ void hungerandthirst(){
             numrabbits --;
             index--;
         }
-        // r->thirst -= 20;
 
         index ++;
         //check for nearby water. Drink if there is a water block next to the rabbit.
-        int i, j;
-        for (i=r->y-1; i <= r->y + 1 && i >= 0 && i < HEIGHT; i++){
-            for (j=r->x-1; j <= r->x + 1 && j>= 0 && j < WIDTH; j++){
-                if (terrain[i][j].symbol=='~'){
-                    r->thirst += 50;
-                    if (r->thirst > 100){ //don't let thirst go over 100
-                        r->thirst = 100;
-                    }
+        // int i, j;
+        for (i=r->y-1; i <= r->y + 1 && i < HEIGHT; i++){
+            for (j=r->x-1; j <= r->x + 1 && j < WIDTH; j++){
+                if ( i>= 0 && j >= 0 && terrain[i][j].symbol=='~'){
+                    r->thirst = 100; //they can drink as much as they want
                 }
             }
         }

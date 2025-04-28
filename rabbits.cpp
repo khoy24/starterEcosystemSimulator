@@ -82,9 +82,9 @@ void moveRabbits(){
 
             int targetx = -1;
             int targety = -1;
-            int hungry = 0;
+            int hungry, thirsty = 0;
             //if hungry
-            if (r->hunger < 70 && r->thirst > r->hunger){
+            if (r->hunger < 70 && r->thirst >= r->hunger){
                 std::vector<int> targets = lookforfood(r);
                 targetx = targets[0];
                 targety = targets[1];
@@ -94,9 +94,10 @@ void moveRabbits(){
                 std::vector<int> targets = lookforwater(r);
                 targetx = targets[0];
                 targety = targets[1];
+                thirsty=1;
             }
             //the rabbit is searching for food, need to account for speed
-            if (hungry==1){
+            if (hungry==1 || thirsty == 1){
                 int newx = r->x;
                 int newy = r->y;
                 // check x direction to get closer (for now all rabbits have a speed of 1, but later we will have to check for 
@@ -133,6 +134,7 @@ void moveRabbits(){
 
             }
 
+            
             //determine if completely surrounded by rabbits so it can stand still
             int nowheretogo = 1;
             int i,j;
