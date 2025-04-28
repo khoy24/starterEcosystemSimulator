@@ -10,10 +10,13 @@
 
 void print_terrain();
 void plotpopulation();
-void agerabbits(int daysleft);
+void agerabbits(int day);
 void hungerandthirst();
+void reproduce();
+void rabbitsborn(int day);
 std::vector<int> points;  // population of rabbits as points on y-axis
 std::vector<int> days;    
+std::vector<Rabbit*> newborns;
 
 int main(int argc, char *argv[]) {
     // pass in a seed using system time so randomly generated numbers aren't the same every time
@@ -40,6 +43,9 @@ int main(int argc, char *argv[]) {
     int daysleft = 79;
     int day = 0;
     while (daysleft > 0) {
+        //check for pregnant rabbits
+        rabbitsborn(day);
+
         moveRabbits();
         print_terrain();
 
@@ -48,12 +54,14 @@ int main(int argc, char *argv[]) {
 
         //check hunger and thirst levels, also have rabbits eat and drink here. 
         hungerandthirst();
-        //check if we should age them up a year
-        agerabbits(daysleft);
+        //check if rabbits can breed
+        reproduce();
 
         refresh();  
         usleep(250000);
         day++;
+        //check if we should age them up a year
+        agerabbits(day);
         daysleft--;
     }
 
@@ -139,15 +147,20 @@ void plotpopulation() {
 void hungerandthirst(){
     for (Rabbit* r : rabbitlist){
         int index = 0;
-        if (r->thirst <= 0 || r->hunger <= 0){
+        int prevhunger = r->hunger;
+        int prevthirst = r->thirst;
+        if (terrain[r->y][r->x].symbol!='#'){
+            r->hunger -= 20;
+        }
+        if (prevthirst <= 0 || prevhunger <= 0){
             rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
             rabbitlist.erase(rabbitlist.begin() + index);
             numrabbits --;
             index--;
         }
-        index ++;
         // r->thirst -= 20;
-        r->hunger -= 20;
+
+        index ++;
         //check for nearby water. Drink if there is a water block next to the rabbit.
         int i, j;
         for (i=r->y-1; i <= r->y + 1 && i >= 0 && i < HEIGHT; i++){
@@ -170,45 +183,134 @@ void hungerandthirst(){
     }
 }
 // ages up rabbits if the day is a multiple of 8. 8 days = 1 year. Rabbits can die of age years 7->10 w/ chances worsening as it goes on.
-void agerabbits(int daysleft){
+void agerabbits(int day){
     //8 days is a year
-    if (daysleft % 8 == 0){
-        int index = 0;
-        for (Rabbit* r : rabbitlist){
+    // if (day - r->dob % 8 == 0){
+    int index = 0;
+    for (Rabbit* r : rabbitlist){
+        if ((day - r->dob) % 8 == 0){
             r->age += 1;
-            // mvprintw(1,index, "%d ", r->age);
-            //kill rabbits if they gotta go
-            if (r->age >= 10){
+        }
+        if (r->age >= 1){
+            r->symbol = 'R';
+        }
+        // mvprintw(1,index, "%d ", r->age);
+        //kill rabbits if they gotta go
+        if (r->age >= 10){
+            rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+            rabbitlist.erase(rabbitlist.begin() + index);
+            numrabbits --;
+            index--;
+        } else if (r->age >= 9){
+            int percentdeath = rand() % 11;
+            if (percentdeath > 7){
                 rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
                 rabbitlist.erase(rabbitlist.begin() + index);
-                numrabbits --;
+                numrabbits--;
                 index--;
-            } else if (r->age >= 9){
-                int percentdeath = rand() % 11;
-                if (percentdeath > 7){
-                    rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
-                    rabbitlist.erase(rabbitlist.begin() + index);
-                    numrabbits--;
-                    index--;
-                }
-            } else if (r->age >= 8){
-                int percentdeath = rand() % 11;
-                if (percentdeath > 5){
-                    rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
-                    rabbitlist.erase(rabbitlist.begin() + index);
-                    numrabbits--;
-                    index--;
-                }
-            } else if (r->age >= 7){
-                int percentdeath = rand() % 11;
-                if (percentdeath > 3){
-                    rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
-                    rabbitlist.erase(rabbitlist.begin() + index);
-                    numrabbits--;
-                    index--;
+            }
+        } else if (r->age >= 8){
+            int percentdeath = rand() % 11;
+            if (percentdeath > 5){
+                rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+                rabbitlist.erase(rabbitlist.begin() + index);
+                numrabbits--;
+                index--;
+            }
+        } else if (r->age >= 7){
+            int percentdeath = rand() % 11;
+            if (percentdeath > 3){
+                rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+                rabbitlist.erase(rabbitlist.begin() + index);
+                numrabbits--;
+                index--;
+            }
+        }
+        index++;
+    }
+    // }
+}
+
+void reproduce(){
+    for (Rabbit* r : rabbitlist){
+        //check surrounding tiles
+        char currentgender = r->gender;
+        char neededgender = 'M';
+        if (currentgender=='M'){
+            neededgender = 'F';
+        }
+        int i,j;
+        for (i = r->y-1; i < r->y+2 && i < HEIGHT; i++){
+            for (j=r->x-1; j < r->x+2 && j < WIDTH; j++){
+                if (i>= 0 && j >= 0 && (i != r->y || j != r->x)){
+                    if (rabbits[i][j]->symbol=='R' && r->symbol=='R' && rabbits[i][j]->gender==neededgender){
+                        //then we can reproduce
+                        if (r->gender=='F'){
+                            r->pregnancy = 1;
+                            // mvprintw(0,0, "Rabbit is pregnant");
+                        } else {
+                            rabbits[i][j]->pregnancy = 1;
+                            // mvprintw(0,0, "Rabbit is pregnant");
+                        }
+                    }
                 }
             }
-            index++;
         }
     }
 }
+
+void rabbitsborn(int day){
+    //mother gives birth to as many babies as she can in her vicinity, as the average litter size is about 5-7 anyways
+    for (Rabbit* r: rabbitlist){
+        if (r->pregnancy == 1){
+            int i,j;
+            char randgender = 'M';
+            int randgenderchance;
+            for (i=r->y-1; i <r->y+2 && i < HEIGHT; i++){
+                for (j=r->x-1; j < r->x+2 && j < WIDTH; j++){
+                    if (i>= 0 && j >= 0 && terrain[i][j].symbol!='~' && rabbits[i][j]->symbol==' '){
+                        // delete rabbits[i][j];
+                        randgenderchance = rand() % 2;
+                        if (randgenderchance==0){
+                            randgender = 'F';
+                        } else {
+                            randgender='M';
+                        }
+                        //for now inherit qualities of mother
+                        rabbits[i][j]->color = r->color;
+                        rabbits[i][j]->gender = randgender;
+                        rabbits[i][j]->speed = 1.0;
+                        rabbits[i][j]->sightradius = 1;
+                        rabbits[i][j]->symbol='r';
+                        rabbits[i][j]->hunger = 100;
+                        rabbits[i][j]->thirst = 100;
+                        rabbits[i][j]->pregnancy = 0;
+                        rabbits[i][j]->age = 0;
+                        rabbits[i][j]->x = j;
+                        rabbits[i][j]->y = i;
+                        rabbits[i][j]->dob = day;
+                        //  = Rabbit(r->color, randgender, 1.0, 1, 'r', 100, 100, 0, 0, i, j);
+                        newborns.push_back(rabbits[i][j]);
+                        numrabbits ++;
+                    }
+                }
+            }
+
+            r->pregnancy = 0;
+        }
+    }
+
+    for (Rabbit* r : newborns){
+        rabbitlist.push_back(r);
+    }
+    newborns.clear();
+}
+
+
+
+
+
+
+
+
+

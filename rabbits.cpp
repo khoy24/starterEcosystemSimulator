@@ -16,7 +16,7 @@ std::vector<int> lookforwater(Rabbit* r);
 
 void spawnRabbits(){
 
-    while (numrabbits < 10){
+    while (numrabbits < 30){
         //color
         int randcolor = rand() % 2;
         if (randcolor == 1){
@@ -46,10 +46,10 @@ void spawnRabbits(){
     
         int x = rand() % WIDTH;
         int y = rand() % HEIGHT;
-        if ((terrain[y][x].symbol == '^' || terrain[y][x].symbol == '#') && (rabbits[y][x]->symbol != 'R' || rabbits[y][x]->symbol=='r')){
-            //color, gender, speed, sightradius, symbol, hunger, thirst, age, pregnancy, y, x;
+        if ((terrain[y][x].symbol == '^' || terrain[y][x].symbol == '#') && (rabbits[y][x]->symbol != 'R' && rabbits[y][x]->symbol!='r')){
+            //color, gender, speed, sightradius, symbol, hunger, thirst, age, pregnancy, dob, y, x;
             delete rabbits[y][x];
-            rabbits[y][x] = new Rabbit(randcolor, randgender, 1.0, 1, 'R', 100, 100, randage, 0, y, x);
+            rabbits[y][x] = new Rabbit(randcolor, randgender, 1.0, 1, 'R', 100, 100, randage, 0, 0, y, x);
             rabbitlist.push_back(rabbits[y][x]);
             numrabbits ++;
         }
@@ -102,21 +102,21 @@ void moveRabbits(){
                 // check x direction to get closer (for now all rabbits have a speed of 1, but later we will have to check for 
                 // higher speeds checking moving less than what they are capable of if there is an obstacle)
                 if (r->x > targetx && (int)(r->x - speed) >= targetx && (int)(r->x - speed) >= 0 && (int)(r->x - speed) < WIDTH){
-                    if (terrain[r->y][(int)(r->x - speed)].symbol!='~'){ //checks if the x left direction is open
+                    if (terrain[r->y][(int)(r->x - speed)].symbol!='~' && rabbits[r->y][(int)(r->x - speed)]->symbol == ' '){ //checks if the x left direction is open
                         newx = (int)(r->x-speed);
                     }
                 } else if (r->x < targetx && (int)(r->x + speed) <= targetx && (int)(r->x + speed)>=0 && (int)(r->x + speed)< WIDTH){
-                    if (terrain[r->y][(int)(r->x + speed)].symbol!='~'){ //checks if the x right direction is open
+                    if (terrain[r->y][(int)(r->x + speed)].symbol!='~' && rabbits[r->y][(int)(r->x + speed)]->symbol == ' '){ //checks if the x right direction is open
                         newx = (int)(r->x+speed);
                     }
                 }
                 //now check y direction to get closer
                 if (r->y > targety && (int)(r->y - speed) >= targety && (int)(r->y - speed)>= 0 && (int)(r->y - speed) < HEIGHT){
-                    if (terrain[(int)(r->y - speed)][newx].symbol!='~'){ //checks if the y up direction is open
+                    if (terrain[(int)(r->y - speed)][newx].symbol!='~' && rabbits[(int)(r->y - speed)][newx]->symbol == ' '){ //checks if the y up direction is open
                         newy = (int)(r->y-speed);
                     }
                 } else if (r->y < targety && (int)(r->y + speed) <= targety && (int)(r->y + speed)>=0 && (int)(r->y + speed)<HEIGHT){
-                    if (terrain[(int)(r->y + speed)][newx].symbol!='~'){ //checks if the y down direction is open
+                    if (terrain[(int)(r->y + speed)][newx].symbol!='~' && rabbits[(int)(r->y + speed)][newx]->symbol == ' '){ //checks if the y down direction is open
                         newy = (int)(r->y+speed);
                     }
                 }
@@ -131,6 +131,20 @@ void moveRabbits(){
                 r->y = newy;
                 moved = 1;
 
+            }
+
+            //determine if completely surrounded by rabbits so it can stand still
+            int nowheretogo = 1;
+            int i,j;
+            for (i=r->y-1; i < r->y+2 && i <HEIGHT;i++){
+                for (j=r->x-1; j < r->x+2 && j < WIDTH; j++){
+                    if (i >= 0 && j >= 0 && rabbits[i][j]->symbol!='r' && rabbits[i][j]->symbol!='R' && terrain[i][j].symbol!='~'){
+                        nowheretogo = 0;
+                    }
+                }
+            }
+            if (nowheretogo==0){
+                moved = 1; //need to move this out so rabbits can stand still.
             }
 
 
@@ -157,6 +171,8 @@ void moveRabbits(){
                 r->y = newycheck;
                 moved = 1;
             }
+            moved = 1;
+
         } 
         //if you remove the section above after hunger a rabbit won't leave its bush (until its thirsty later) otherwise this has random movement
 
