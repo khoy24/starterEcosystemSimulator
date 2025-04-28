@@ -67,11 +67,29 @@ int main(int argc, char *argv[]) {
 
     //can pick what graphs to display
     clear();
-    
+    mvprintw(10,20, "View graphs. p : population graph, g : gender graph, s : speed graph, Q : quit program");
+    int32_t key;
+    int inprogram = 1;
+    while (inprogram==1){
+        key = getch();
+        switch (key) {
+            case 'p':
+                //attempt to move pc one cell upper left
+                plotpopulation();
+                break;
+            case 27:
+                clear();
+                mvprintw(10,20, "View graphs. p : population graph, g : gender graph, s : speed graph, Q : quit program");
+                break;
+            case 'Q':
+                inprogram = 0;
+            default:
+                mvprintw(0,1, "Unknown command, try again. p : population graph, g : gender graph, s : speed graph, Q : quit program, esc : go back");
+                break;
 
-    plotpopulation(); 
+        }
+    }
 
-    getch();
     endwin();
 
     return 0;
@@ -137,7 +155,7 @@ void plotpopulation() {
     }
 
     //add title
-    mvprintw(0, 35, "Rabbit Population graphed over time");
+    mvprintw(0, 35, "Rabbit Population graphed over time      (esc to go back)");
     //add y-axis labels
     int count = 0;
     for (int i : yaxismarks){
