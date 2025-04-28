@@ -8,8 +8,8 @@
 #include <cmath>
 
 int numrabbits = 0;
-Rabbit rabbits[HEIGHT][WIDTH];
-std::vector<Rabbit> rabbitlist;
+Rabbit* rabbits[HEIGHT][WIDTH];
+std::vector<Rabbit*> rabbitlist;
 void clearrabbits();
 
 void spawnRabbits(){
@@ -37,16 +37,17 @@ void spawnRabbits(){
 
         //og age should be from 20->40 (in their primes)
         //average lifespan of rabbit is 7-10 years. lets say 70-100 in this case. Babies are 0->10
-        int randage = 20 + rand() % 21;
+        int randage = 3 + rand() % 5;
         //baby rabbits = r, adult rabbits = R
 
         //pregnant spawns as not.
     
         int x = rand() % WIDTH;
         int y = rand() % HEIGHT;
-        if ((terrain[y][x].symbol == '^' || terrain[y][x].symbol == '#') && (rabbits[y][x].symbol != 'R' || rabbits[y][x].symbol=='r')){
+        if ((terrain[y][x].symbol == '^' || terrain[y][x].symbol == '#') && (rabbits[y][x]->symbol != 'R' || rabbits[y][x]->symbol=='r')){
             //color, gender, speed, sightradius, symbol, hunger, thirst, age, pregnancy, y, x;
-            rabbits[y][x] = Rabbit(randcolor, randgender, 1.0, 1, 'R', 100, 100, randage, 0, y, x);
+            delete rabbits[y][x];
+            rabbits[y][x] = new Rabbit(randcolor, randgender, 1.0, 1, 'R', 100, 100, randage, 0, y, x);
             rabbitlist.push_back(rabbits[y][x]);
             numrabbits ++;
         }
@@ -55,10 +56,10 @@ void spawnRabbits(){
 
 void moveRabbits(){
 
-    clearrabbits();
+    // clearrabbits();
 
-    for (Rabbit r : rabbitlist){
-        double speed = r.speed; // how many spaces the rabbit will move this round
+    for (Rabbit* r : rabbitlist){
+        double speed = r->speed; // how many spaces the rabbit will move this round
         double largestint = ceil(speed);
         if (largestint - speed > 0){
             //then percentage chance of moving to the largest int = 
@@ -76,25 +77,32 @@ void moveRabbits(){
         //move rabbit number of spaces that it's speed is, random direction.
         int moved = 0;
         while (moved == 0){
-            int newxcheck = r.x + rand() % (int)(speed + 1);
+            int newxcheck = r->x + rand() % (int)(speed + 1);
             int negchance = rand() % 2;
             if (negchance == 1){
-                newxcheck = r.x - newxcheck + r.x;
+                newxcheck = r->x - newxcheck + r->x;
             }
-            int newycheck = r.y + rand() % (int)(speed + 1);
+            int newycheck = r->y + rand() % (int)(speed + 1);
             int negchance2 = rand() % 2;
             if (negchance2 == 1){
-                newycheck = r.y - newycheck + r.y;
+                newycheck = r->y - newycheck + r->y;
             }
-            if (newycheck >= 0 && newycheck < HEIGHT && newxcheck >= 0 && newxcheck < WIDTH && terrain[newycheck][newxcheck].symbol != '~' && rabbits[newycheck][newxcheck].symbol!='R' && rabbits[newycheck][newxcheck].symbol!='r'){
+            if (newycheck >= 0 && newycheck < HEIGHT && newxcheck >= 0 && newxcheck < WIDTH && terrain[newycheck][newxcheck].symbol != '~' && rabbits[newycheck][newxcheck]->symbol!='R' && rabbits[newycheck][newxcheck]->symbol!='r'){
                 
+                //move the empty space to the rabbits about to be previous space and update the pointers x and y's.
+                rabbits[r->y][r->x] = rabbits[newycheck][newxcheck];
+                rabbits[r->y][r->x]->y = r->y;
+                rabbits[r->y][r->x]->x = r->x;
+
                 rabbits[newycheck][newxcheck]= r;
 
-                r.x = newxcheck;
-                r.y = newycheck;
+                r->x = newxcheck;
+                r->y = newycheck;
                 moved = 1;
             }
         }
+
+
     }
 }
 
@@ -102,7 +110,7 @@ void clearrabbits(){
     int i,j;
     for (i = 0; i < HEIGHT; i++){
         for (j = 0; j < WIDTH; j++){
-            rabbits[i][j].symbol = ' ';
+            rabbits[i][j]->symbol = ' ';
         }
     }
 }

@@ -10,6 +10,7 @@
 
 void print_terrain();
 void plotpopulation();
+void agerabbits(int daysleft);
 std::vector<int> points;  // population of rabbits as points on y-axis
 std::vector<int> days;    
 
@@ -42,8 +43,10 @@ int main(int argc, char *argv[]) {
         print_terrain();
 
         points.push_back(numrabbits);  
-        numrabbits+= 10; 
         days.push_back(day);  
+
+        //check if we should age them up a year
+        agerabbits(daysleft);
 
         refresh();  
         usleep(250000);
@@ -65,10 +68,10 @@ void print_terrain() {
     for (i = 0; i < HEIGHT; i++) {
         for (j = 0; j < WIDTH; j++) {
             // Print rabbits first
-            if (rabbits[i][j].symbol != ' ') {
-                attron(COLOR_PAIR(rabbits[i][j].color));
-                mvaddch(1 + i, 20 + j, rabbits[i][j].symbol);
-                attroff(COLOR_PAIR(rabbits[i][j].color));
+            if (rabbits[i][j]->symbol != ' ') {
+                attron(COLOR_PAIR(rabbits[i][j]->color));
+                mvaddch(1 + i, 20 + j, rabbits[i][j]->symbol);
+                attroff(COLOR_PAIR(rabbits[i][j]->color));
             } else {
                 attron(COLOR_PAIR(terrain[i][j].color));
                 mvaddch(1 + i, 20 + j, terrain[i][j].symbol);
@@ -131,4 +134,46 @@ void plotpopulation() {
 }
 
 
-
+// ages up rabbits if the day is a multiple of 8. 8 days = 1 year. Rabbits can die of age years 7->10 w/ chances worsening as it goes on.
+void agerabbits(int daysleft){
+    //8 days is a year
+    if (daysleft % 8 == 0){
+        int index = 0;
+        for (Rabbit* r : rabbitlist){
+            r->age += 1;
+            // mvprintw(1,index, "%d ", r->age);
+            //kill rabbits if they gotta go
+            if (r->age >= 10){
+                rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+                rabbitlist.erase(rabbitlist.begin() + index);
+                numrabbits --;
+                index--;
+            } else if (r->age >= 9){
+                int percentdeath = rand() % 11;
+                if (percentdeath > 7){
+                    rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+                    rabbitlist.erase(rabbitlist.begin() + index);
+                    numrabbits--;
+                    index--;
+                }
+            } else if (r->age >= 8){
+                int percentdeath = rand() % 11;
+                if (percentdeath > 5){
+                    rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+                    rabbitlist.erase(rabbitlist.begin() + index);
+                    numrabbits--;
+                    index--;
+                }
+            } else if (r->age >= 7){
+                int percentdeath = rand() % 11;
+                if (percentdeath > 3){
+                    rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+                    rabbitlist.erase(rabbitlist.begin() + index);
+                    numrabbits--;
+                    index--;
+                }
+            }
+            index++;
+        }
+    }
+}

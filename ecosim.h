@@ -53,9 +53,9 @@ class Rabbit {
 extern int numrabbits;
 // [numrows][numcols]
 extern land terrain[HEIGHT][WIDTH];
-extern Rabbit rabbits[HEIGHT][WIDTH];
+extern Rabbit* rabbits[HEIGHT][WIDTH];
 
-extern std::vector<Rabbit> rabbitlist;
+extern std::vector<Rabbit*> rabbitlist;
 extern std::vector<int> points;
 extern std::vector<int> days;
 

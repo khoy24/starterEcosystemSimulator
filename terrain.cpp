@@ -66,8 +66,9 @@ void initializerabbits(){
     int i,j;
     for (i=0; i < HEIGHT; i++){
         for (j=0; j < WIDTH; j++){
-            rabbits[i][j].y = i;
-            rabbits[i][j].x = j;
+            rabbits[i][j] = new Rabbit();
+            rabbits[i][j]->y = i;
+            rabbits[i][j]->x = j;
         }
     }
 }
