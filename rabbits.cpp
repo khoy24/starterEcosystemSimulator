@@ -11,6 +11,8 @@ int numrabbits = 0;
 Rabbit* rabbits[HEIGHT][WIDTH];
 std::vector<Rabbit*> rabbitlist;
 void clearrabbits();
+std::vector<int> lookforfood(Rabbit* r);
+std::vector<int> lookforwater(Rabbit* r);
 
 void spawnRabbits(){
 
@@ -77,6 +79,61 @@ void moveRabbits(){
         //move rabbit number of spaces that it's speed is, random direction.
         int moved = 0;
         while (moved == 0){
+
+            int targetx = -1;
+            int targety = -1;
+            int hungry = 0;
+            //if hungry
+            if (r->hunger < 70 && r->thirst > r->hunger){
+                std::vector<int> targets = lookforfood(r);
+                targetx = targets[0];
+                targety = targets[1];
+                hungry = 1;
+            // if thirsty
+            } else if (r->thirst < 70){
+                std::vector<int> targets = lookforwater(r);
+                targetx = targets[0];
+                targety = targets[1];
+            }
+            //the rabbit is searching for food, need to account for speed
+            if (hungry==1){
+                int newx = r->x;
+                int newy = r->y;
+                // check x direction to get closer (for now all rabbits have a speed of 1, but later we will have to check for 
+                // higher speeds checking moving less than what they are capable of if there is an obstacle)
+                if (r->x > targetx && (int)(r->x - speed) >= targetx && (int)(r->x - speed) >= 0 && (int)(r->x - speed) < WIDTH){
+                    if (terrain[r->y][(int)(r->x - speed)].symbol!='~'){ //checks if the x left direction is open
+                        newx = (int)(r->x-speed);
+                    }
+                } else if (r->x < targetx && (int)(r->x + speed) <= targetx && (int)(r->x + speed)>=0 && (int)(r->x + speed)< WIDTH){
+                    if (terrain[r->y][(int)(r->x + speed)].symbol!='~'){ //checks if the x right direction is open
+                        newx = (int)(r->x+speed);
+                    }
+                }
+                //now check y direction to get closer
+                if (r->y > targety && (int)(r->y - speed) >= targety && (int)(r->y - speed)>= 0 && (int)(r->y - speed) < HEIGHT){
+                    if (terrain[(int)(r->y - speed)][newx].symbol!='~'){ //checks if the y up direction is open
+                        newy = (int)(r->y-speed);
+                    }
+                } else if (r->y < targety && (int)(r->y + speed) <= targety && (int)(r->y + speed)>=0 && (int)(r->y + speed)<HEIGHT){
+                    if (terrain[(int)(r->y + speed)][newx].symbol!='~'){ //checks if the y down direction is open
+                        newy = (int)(r->y+speed);
+                    }
+                }
+                //move the empty space to the rabbits about to be previous space and update the pointers x and y's.
+                rabbits[r->y][r->x] = rabbits[newy][newx];
+                rabbits[r->y][r->x]->y = r->y;
+                rabbits[r->y][r->x]->x = r->x;
+
+                rabbits[newy][newx]= r;
+
+                r->x = newx;
+                r->y = newy;
+                moved = 1;
+
+            }
+
+
             int newxcheck = r->x + rand() % (int)(speed + 1);
             int negchance = rand() % 2;
             if (negchance == 1){
@@ -100,7 +157,8 @@ void moveRabbits(){
                 r->y = newycheck;
                 moved = 1;
             }
-        }
+        } 
+        //if you remove the section above after hunger a rabbit won't leave its bush (until its thirsty later) otherwise this has random movement
 
 
     }
@@ -114,3 +172,49 @@ void clearrabbits(){
         }
     }
 }
+
+std::vector<int> lookforfood(Rabbit* r){
+    int i,j;
+    int closestfoodx, closestfoody = -1;
+    int closestfooddistance = 1000;
+
+    for (i=r->y - r->sightradius; i <= r->y + r->sightradius && i >=0 && i < HEIGHT; i++){
+        for (j=r->x-r->sightradius; j <= r->x + r->sightradius && j>=0 && j <WIDTH; j++){
+            if (terrain[i][j].symbol=='#'){
+                //need to take into account speed here (how far they can move) because if they can't move there directly,
+                //we need to remember where they can go cuz if theres food closer they'd want to go to close one but would pop up after
+                //some in the loop potentially. 
+                //Have a closest food source terrain target??
+                // if (abs(r->y - i) <= abs(r->y - closestfoody) || abs(r->x-j) <= abs(r->x - closestfoodx)){ // I think this might be a problem. what if one variable is way further?
+                                                                              // actually its a square so probably not?
+                                                                                 // I think I should implement x^2 + y^2 formula
+                if ((i - r->y)*(i - r->y) + (j - r->x)*(j - r->x) < closestfooddistance){
+                    closestfoodx = j;
+                    closestfoody = i;
+                    closestfooddistance = (i - r->y)*(i - r->y) + (j - r->x)*(j - r->x);
+                }
+            }
+        }
+    }
+    return {closestfoodx, closestfoody};
+}
+
+std::vector<int> lookforwater(Rabbit* r){
+    int i,j;
+    int closestwaterx, closestwatery = -1;
+    int closestwaterdistance = 1000;
+
+    for (i=r->y - r->sightradius; i <= r->y + r->sightradius && i >=0 && i < HEIGHT; i++){
+        for (j=r->x-r->sightradius; j <= r->x + r->sightradius && j>=0 && j <WIDTH; j++){
+            if (terrain[i][j].symbol=='~'){
+                if ((i - r->y)*(i - r->y) + (j - r->x)*(j - r->x) < closestwaterdistance){
+                    closestwaterx = j;
+                    closestwatery = i;
+                    closestwaterdistance = (i - r->y)*(i - r->y) + (j - r->x)*(j - r->x);
+                }
+            }
+        }
+    }
+    return {closestwaterx, closestwatery};
+}
+

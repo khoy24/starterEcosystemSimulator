@@ -11,6 +11,7 @@
 void print_terrain();
 void plotpopulation();
 void agerabbits(int daysleft);
+void hungerandthirst();
 std::vector<int> points;  // population of rabbits as points on y-axis
 std::vector<int> days;    
 
@@ -45,6 +46,8 @@ int main(int argc, char *argv[]) {
         points.push_back(numrabbits);  
         days.push_back(day);  
 
+        //check hunger and thirst levels, also have rabbits eat and drink here. 
+        hungerandthirst();
         //check if we should age them up a year
         agerabbits(daysleft);
 
@@ -133,7 +136,39 @@ void plotpopulation() {
     refresh();  
 }
 
-
+void hungerandthirst(){
+    for (Rabbit* r : rabbitlist){
+        int index = 0;
+        if (r->thirst <= 0 || r->hunger <= 0){
+            rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+            rabbitlist.erase(rabbitlist.begin() + index);
+            numrabbits --;
+            index--;
+        }
+        index ++;
+        // r->thirst -= 20;
+        r->hunger -= 20;
+        //check for nearby water. Drink if there is a water block next to the rabbit.
+        int i, j;
+        for (i=r->y-1; i <= r->y + 1 && i >= 0 && i < HEIGHT; i++){
+            for (j=r->x-1; j <= r->x + 1 && j>= 0 && j < WIDTH; j++){
+                if (terrain[i][j].symbol=='~'){
+                    r->thirst += 50;
+                    if (r->thirst > 100){ //don't let thirst go over 100
+                        r->thirst = 100;
+                    }
+                }
+            }
+        }
+        //check if the rabbit is on a berry bush. If it is, eat. 
+        if (terrain[r->y][r->x].symbol=='#'){
+            r->hunger += 50;
+            if (r->hunger > 100){ //don't let hunger go over 100
+                r->hunger = 100;
+            }
+        }
+    }
+}
 // ages up rabbits if the day is a multiple of 8. 8 days = 1 year. Rabbits can die of age years 7->10 w/ chances worsening as it goes on.
 void agerabbits(int daysleft){
     //8 days is a year
