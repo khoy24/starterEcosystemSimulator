@@ -11,10 +11,12 @@
 void print_terrain();
 void plotpopulation();
 void plotcolor();
+void plotspeed();
 void agerabbits(int day);
 void hungerandthirst();
 void reproduce();
 void rabbitsborn(int day);
+void calculateaveragespeed();
 std::vector<int> points;  // population of rabbits as points on y-axis
 std::vector<int> days;    
 std::vector<Rabbit*> newborns;
@@ -22,10 +24,12 @@ std::vector<int> yellowrabbits;
 std::vector<int> whiterabbits;
 std::vector<int> malerabbits;
 std::vector<int> femalerabbits;
+std::vector<double> speeds;
 int numfemales = 0;
 int nummales = 0;
 int numyellow = 0;
 int numwhite = 0;
+double averagespeed = 1.0;
 
 int main(int argc, char *argv[]) {
     // pass in a seed using system time so randomly generated numbers aren't the same every time
@@ -49,6 +53,9 @@ int main(int argc, char *argv[]) {
     generate_terrain();
     spawnRabbits();
 
+    //calculate average speed originally
+    calculateaveragespeed();
+
     int daysleft = 79;
     int day = 0;
     while (daysleft > 0) {
@@ -62,6 +69,7 @@ int main(int argc, char *argv[]) {
         days.push_back(day);  
         yellowrabbits.push_back(numyellow);
         whiterabbits.push_back(numwhite);
+        speeds.push_back(averagespeed);
 
         //check hunger and thirst levels, also have rabbits eat and drink here. 
         hungerandthirst();
@@ -74,6 +82,12 @@ int main(int argc, char *argv[]) {
         //check if we should age them up a year
         agerabbits(day);
         daysleft--;
+
+        // if (numrabbits==0){
+        //     daysleft = 0;
+        // }
+        // calculate the average speed each day
+        calculateaveragespeed();
     }
 
     //can pick what graphs to display
@@ -90,6 +104,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'c':
                 plotcolor();
+                break;
+            case 's':
+                plotspeed();
                 break;
             case 27:
                 clear();
@@ -257,6 +274,59 @@ void plotcolor() {
 
     refresh();  
 }
+
+// plots the graph of the average rabbit speed over time, scaled to terminal size
+void plotspeed() {
+
+    clear();
+
+    double maxval = *std::max_element(speeds.begin(), speeds.end()); //gets max numrabbits
+
+    maxval = (double)ceil(maxval);
+    //assigns y-axis marks with the necessary distance in between
+    double yaxisincrement= maxval / 20.0;
+    mvprintw(0,90,"%f %f", maxval, maxval / 20.0);
+    // vector consisting of all y-axis mark ticks. should be checked for which value is closest for each print.
+    std::vector<double> yaxismarks;
+    double starter = 0.0;
+    while (starter < maxval){
+        yaxismarks.push_back(starter);
+        starter += yaxisincrement;
+    }
+
+    // scale to typical terminal size (or in this case our terrains), 80 x 20
+    for (size_t d = 0; d < speeds.size(); d++) { 
+
+        double currentpoint = speeds[d];
+        double closesttick = 0.0;
+        //the row corresponding to the closest tick to the population point
+        int tickrow = 0;
+
+        // find the closest tick mark
+        for (size_t i = 0; i < yaxismarks.size(); i++) {
+            double tick = yaxismarks[i];
+            if (std::fabs(currentpoint - tick) <= std::fabs(currentpoint - closesttick)) {
+                closesttick = tick;
+                tickrow = i; 
+            }
+        }
+
+        // plots the graph points as *
+        mvaddch(HEIGHT - tickrow, 20 + d, '*'); 
+    }
+
+    //add title
+    mvprintw(0, 35, "Rabbit Speeds graphed over time      (esc to go back)");
+    //add y-axis labels
+    int count = 0;
+    for (double i : yaxismarks){
+        mvprintw(HEIGHT - count, 5, "%f", i);
+        count ++;
+    }
+
+    refresh();  
+}
+
 
 void hungerandthirst(){
     for (Rabbit* r : rabbitlist){
@@ -434,10 +504,27 @@ void rabbitsborn(int day){
                         } else {
                             colorchance = r->colorpassdown;
                         }
+
+                        //have the rabbits change speed based on their parents ( for now just their mother ). Give a chance at a .5 offset mayhaps. 
+                        double newspeed = 1.0;
+                        int speedchance = rand() % 100;
+                        if (speedchance <= 33){
+                            newspeed = (double)(r->speed) - 0.33;
+                            if (newspeed <= 0){
+                                newspeed = .5;
+                            }
+                        } else if (speedchance <= 66){
+                            newspeed = (double) (r->speed);
+                        } else {
+                            newspeed = (double)(r->speed) + 0.33;
+                        }
+
+
+
                         //for now inherit qualities of mother
                         rabbits[i][j]->color = colorchance;
                         rabbits[i][j]->gender = randgender;
-                        rabbits[i][j]->speed = 1.0;
+                        rabbits[i][j]->speed = newspeed;
                         rabbits[i][j]->sightradius = 1;
                         rabbits[i][j]->symbol='r';
                         rabbits[i][j]->hunger = 100;
@@ -470,7 +557,18 @@ void rabbitsborn(int day){
     newborns.clear();
 }
 
-
+void calculateaveragespeed(){
+    double_t total = 0;
+    for (Rabbit* r : rabbitlist){
+        total += r->speed;
+    }
+    if (numrabbits==0){
+        averagespeed = 0;
+        return;
+    }
+    averagespeed = total / (double)(numrabbits);
+    // mvprintw(0, 10, "Average speed: %f   ", averagespeed);
+}
 
 
 

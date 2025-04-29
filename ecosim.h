@@ -59,6 +59,7 @@ extern int numfemales;
 extern int nummales;
 extern int numyellow;
 extern int numwhite;
+extern double averagespeed;
 // [numrows][numcols]
 extern land terrain[HEIGHT][WIDTH];
 extern Rabbit* rabbits[HEIGHT][WIDTH];
