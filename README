@@ -1,6 +1,14 @@
 # starterEcosystemSimulator
-Project created to practice the fundamentals of emulating an ecosystem. Programmed in C++. 
-
+Project created to learn the fundamentals of emulating an ecosystem. Programmed in C++. COM S 327 Final Project.
 
 # How to run the program
 
+type make to create the files, hit enter
+then type ./ecosim to run the program
+
+# About the program 
+This is an ecosystem simulator, right now it is focused on rabbits. 
+
+Rabbits wander the terrain randomly until they get hungry/thirsty and then they seek out food & water. To eat they must land on a berry, but they can only see 1 block away in all directions. To drink they must be near water. Rabbits also age, so they can die of age, hunger, or thirst. 8 days = 1 year and rabbits die around years 7-10 with chances increasing each year. If rabbits come into contact with one another (and are opposite genders) they can breed. The program calculates counts of various rabbit colors, genders, speeds, deaths, and number of rabbits, etc. as it goes on. Once all 80 days of simulation are run or all rabbits die off, the option to view the graphs for these variables is displayed. 
+
+A program like this could be used to determine how best to control a population of rabbits and determine what factors affect them. 

@@ -1,0 +1,56 @@
+(April 24, 2025 at 1:30 PM)
+
+Added starter files.
+
+(April 24, 2025 at 1:31 PM)
+
+Removed the generated file.
+
+(April 25, 2025 at 11:46 PM)
+
+Added the terrain/map creation with land, water, and berries.
+
+(April 26, 2025 at 3:29 PM)
+
+added rabbits and spawn
+
+(April 26, 2025 at 5:01 PM)
+
+Added Random Rabbit movement
+
+(April 27, 2025 at 9:34 PM)
+
+Created function that graphs the rabbit population over time and scales it to the terminal.
+
+(April 28, 2025 at 1:42 AM)
+
+Added rabbit aging naturally and dying.
+
+(April 28, 2025 at 12:38 PM)
+
+Implemented hunger
+
+(April 28, 2025 at 3:12 PM)
+
+added rabbits breeding and repopulation
+
+(April 28, 2025 at 4:23 PM)
+
+implemented thirst
+
+(April 28, 2025 at 4:32 PM)
+
+Added the base for graph options screen at the end of the simulation.
+ 
+(April 28, 2025 at 8:38 PM)
+
+added rabbit color tracking and 50/50 chance at inheriting color from parents
+
+(April 28, 2025 at 10:04 PM)
+
+added speed changes for offspring, and average speed calculations and a speed graph
+
+April 29, 2025 at 1:57 AM :
+
+Added graph for death cause counts. Loop now stops if rabbit population is 0, doesn't run the full 80 days. Added gender tracking graph. Made baby rabbits get hungry/thirsty a bit faster than old ones.
+
