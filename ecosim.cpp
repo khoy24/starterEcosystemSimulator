@@ -10,6 +10,7 @@
 
 void print_terrain();
 void plotpopulation();
+void plotcolor();
 void agerabbits(int day);
 void hungerandthirst();
 void reproduce();
@@ -17,6 +18,14 @@ void rabbitsborn(int day);
 std::vector<int> points;  // population of rabbits as points on y-axis
 std::vector<int> days;    
 std::vector<Rabbit*> newborns;
+std::vector<int> yellowrabbits;
+std::vector<int> whiterabbits;
+std::vector<int> malerabbits;
+std::vector<int> femalerabbits;
+int numfemales = 0;
+int nummales = 0;
+int numyellow = 0;
+int numwhite = 0;
 
 int main(int argc, char *argv[]) {
     // pass in a seed using system time so randomly generated numbers aren't the same every time
@@ -51,6 +60,8 @@ int main(int argc, char *argv[]) {
 
         points.push_back(numrabbits);  
         days.push_back(day);  
+        yellowrabbits.push_back(numyellow);
+        whiterabbits.push_back(numwhite);
 
         //check hunger and thirst levels, also have rabbits eat and drink here. 
         hungerandthirst();
@@ -67,7 +78,7 @@ int main(int argc, char *argv[]) {
 
     //can pick what graphs to display
     clear();
-    mvprintw(10,20, "View graphs. p : population graph, g : gender graph, s : speed graph, Q : quit program");
+    mvprintw(10,20, "View graphs. p : population, c: color, g : gender, s : speed, Q : quit program");
     int32_t key;
     int inprogram = 1;
     while (inprogram==1){
@@ -77,14 +88,17 @@ int main(int argc, char *argv[]) {
                 //attempt to move pc one cell upper left
                 plotpopulation();
                 break;
+            case 'c':
+                plotcolor();
+                break;
             case 27:
                 clear();
-                mvprintw(10,20, "View graphs. p : population graph, g : gender graph, s : speed graph, Q : quit program");
+                mvprintw(10,20, "View graphs. p : population, c: color, g : gender, s : speed, Q : quit program");
                 break;
             case 'Q':
                 inprogram = 0;
             default:
-                mvprintw(0,1, "Unknown command, try again. p : population graph, g : gender graph, s : speed graph, Q : quit program, esc : go back");
+                mvprintw(0,1, "Unknown command, try again. p : population, c: color, g : gender, s : speed, Q : quit program, esc : go back");
                 break;
 
         }
@@ -166,6 +180,84 @@ void plotpopulation() {
     refresh();  
 }
 
+// plots the graph of the rabbit population, scaled to terminal size
+void plotcolor() {
+
+    clear();
+
+    int maxval = *std::max_element(yellowrabbits.begin(), yellowrabbits.end()); //gets max yellow rabbits
+    int maxval2 = *std::max_element(whiterabbits.begin(), whiterabbits.end()); //gets max white rabbits
+    if (maxval2 > maxval){
+        maxval = maxval2;
+    }
+    //assigns y-axis marks with the necessary distance in between
+    double yaxisincrementprev = maxval / 20.0;
+    int yaxisincrement = ceil(yaxisincrementprev);
+    // vector consisting of all y-axis mark ticks. should be checked for which value is closest for each print.
+    std::vector<int> yaxismarks;
+    int starter = 0;
+    while (starter < maxval){
+        yaxismarks.push_back(starter);
+        starter += yaxisincrement;
+    }
+
+    // scale to typical terminal size (or in this case our terrains), 80 x 20
+
+    //plot points for yellow rabbits
+    for (size_t d = 0; d < yellowrabbits.size(); d++) { 
+
+        int currentpoint = yellowrabbits[d];
+        int closesttick = 0;
+        //the row corresponding to the closest tick to the population point
+        int tickrow = 0;
+
+        // find the closest tick mark
+        for (size_t i = 0; i < yaxismarks.size(); i++) {
+            int tick = yaxismarks[i];
+            if (abs(currentpoint - tick) < abs(currentpoint - closesttick)) {
+                closesttick = tick;
+                tickrow = i; 
+            }
+        }
+
+        // plots the graph points as *
+        attron(COLOR_PAIR(4));
+        mvaddch(HEIGHT - tickrow, 20 + d, '*'); 
+        attroff(COLOR_PAIR(4));
+    }
+    //plot points for white rabbits
+    for (size_t d = 0; d < whiterabbits.size(); d++) { 
+
+        int currentpoint = whiterabbits[d];
+        int closesttick = 0;
+        //the row corresponding to the closest tick to the population point
+        int tickrow = 0;
+
+        // find the closest tick mark
+        for (size_t i = 0; i < yaxismarks.size(); i++) {
+            int tick = yaxismarks[i];
+            if (abs(currentpoint - tick) < abs(currentpoint - closesttick)) {
+                closesttick = tick;
+                tickrow = i; 
+            }
+        }
+
+        // plots the graph points as *
+        mvaddch(HEIGHT - tickrow, 20 + d, '*'); 
+    }
+
+    //add title
+    mvprintw(0, 35, "Rabbit Colors graphed over time      (esc to go back)");
+    //add y-axis labels
+    int count = 0;
+    for (int i : yaxismarks){
+        mvprintw(HEIGHT - count, 5, "%d", i);
+        count ++;
+    }
+
+    refresh();  
+}
+
 void hungerandthirst(){
     for (Rabbit* r : rabbitlist){
         int index = 0;
@@ -191,6 +283,11 @@ void hungerandthirst(){
         }
         if (prevthirst <= 0 || prevhunger <= 0){
             rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+            if (rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->color == 4){
+                numyellow--;
+            } else {
+                numwhite--;
+            }
             rabbitlist.erase(rabbitlist.begin() + index);
             numrabbits --;
             index--;
@@ -231,6 +328,11 @@ void agerabbits(int day){
         //kill rabbits if they gotta go
         if (r->age >= 10){
             rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+            if (rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->color == 4){
+                numyellow--;
+            } else {
+                numwhite--;
+            }
             rabbitlist.erase(rabbitlist.begin() + index);
             numrabbits --;
             index--;
@@ -238,6 +340,11 @@ void agerabbits(int day){
             int percentdeath = rand() % 11;
             if (percentdeath > 7){
                 rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+                if (rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->color == 4){
+                    numyellow--;
+                } else {
+                    numwhite--;
+                }
                 rabbitlist.erase(rabbitlist.begin() + index);
                 numrabbits--;
                 index--;
@@ -246,6 +353,11 @@ void agerabbits(int day){
             int percentdeath = rand() % 11;
             if (percentdeath > 5){
                 rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+                if (rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->color == 4){
+                    numyellow--;
+                } else {
+                    numwhite--;
+                }
                 rabbitlist.erase(rabbitlist.begin() + index);
                 numrabbits--;
                 index--;
@@ -254,6 +366,11 @@ void agerabbits(int day){
             int percentdeath = rand() % 11;
             if (percentdeath > 3){
                 rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->symbol = ' ';
+                if (rabbits[rabbitlist[index]->y][rabbitlist[index]->x]->color == 4){
+                    numyellow--;
+                } else {
+                    numwhite--;
+                }
                 rabbitlist.erase(rabbitlist.begin() + index);
                 numrabbits--;
                 index--;
@@ -280,9 +397,11 @@ void reproduce(){
                         //then we can reproduce
                         if (r->gender=='F'){
                             r->pregnancy = 1;
+                            r->colorpassdown = rabbits[i][j]->color;
                             // mvprintw(0,0, "Rabbit is pregnant");
                         } else {
                             rabbits[i][j]->pregnancy = 1;
+                            rabbits[i][j]->colorpassdown = r->color;
                             // mvprintw(0,0, "Rabbit is pregnant");
                         }
                     }
@@ -309,8 +428,14 @@ void rabbitsborn(int day){
                         } else {
                             randgender='M';
                         }
+                        int colorchance = rand() % 2;
+                        if (colorchance==1){
+                            colorchance = r->color;
+                        } else {
+                            colorchance = r->colorpassdown;
+                        }
                         //for now inherit qualities of mother
-                        rabbits[i][j]->color = r->color;
+                        rabbits[i][j]->color = colorchance;
                         rabbits[i][j]->gender = randgender;
                         rabbits[i][j]->speed = 1.0;
                         rabbits[i][j]->sightradius = 1;
@@ -319,12 +444,18 @@ void rabbitsborn(int day){
                         rabbits[i][j]->thirst = 100;
                         rabbits[i][j]->pregnancy = 0;
                         rabbits[i][j]->age = 0;
+                        rabbits[i][j]->colorpassdown = r->color;
                         rabbits[i][j]->x = j;
                         rabbits[i][j]->y = i;
                         rabbits[i][j]->dob = day;
                         //  = Rabbit(r->color, randgender, 1.0, 1, 'r', 100, 100, 0, 0, i, j);
                         newborns.push_back(rabbits[i][j]);
                         numrabbits ++;
+                        if (rabbits[i][j]->color == 4){
+                            numyellow++;
+                        } else {
+                            numwhite++;
+                        }
                     }
                 }
             }

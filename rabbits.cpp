@@ -21,6 +21,9 @@ void spawnRabbits(){
         int randcolor = rand() % 2;
         if (randcolor == 1){
             randcolor = 4; //assign it yellow if not white
+            numyellow ++;
+        } else {
+            numwhite ++;
         }
 
         //gender
@@ -47,9 +50,9 @@ void spawnRabbits(){
         int x = rand() % WIDTH;
         int y = rand() % HEIGHT;
         if ((terrain[y][x].symbol == '^' || terrain[y][x].symbol == '#') && (rabbits[y][x]->symbol != 'R' && rabbits[y][x]->symbol!='r')){
-            //color, gender, speed, sightradius, symbol, hunger, thirst, age, pregnancy, dob, y, x;
+            //color, gender, speed, sightradius, symbol, hunger, thirst, age, pregnancy, colorpassdown, dob, y, x;
             delete rabbits[y][x];
-            rabbits[y][x] = new Rabbit(randcolor, randgender, 1.0, 1, 'R', 100, 100, randage, 0, 0, y, x);
+            rabbits[y][x] = new Rabbit(randcolor, randgender, 1.0, 1, 'R', 100, 100, randage, 0, 0, 0, y, x);
             rabbitlist.push_back(rabbits[y][x]);
             numrabbits ++;
         }

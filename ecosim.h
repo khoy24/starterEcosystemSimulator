@@ -26,15 +26,16 @@ class Rabbit {
         int thirst;
         int age;
         int pregnancy; //tracks how many days pregnant a rabbit is
+        int colorpassdown;
         int dob;
 
         //location
         int y;
         int x;
 
-        Rabbit(): color(-1), gender('X'), speed(-1.0), sightradius(-1), symbol(' '), hunger(-1), thirst(-1), age(-1), pregnancy(-1), dob(0){
+        Rabbit(): color(-1), gender('X'), speed(-1.0), sightradius(-1), symbol(' '), hunger(-1), thirst(-1), age(-1), pregnancy(-1), colorpassdown(0), dob(0){
         }
-        Rabbit(int c, char g, int sp, int si, char sym, int h, int t, int a, int p, int bday, int yco, int xco){
+        Rabbit(int c, char g, int sp, int si, char sym, int h, int t, int a, int p, int cp, int bday, int yco, int xco){
             color = c;
             gender = g;
             speed = sp;
@@ -44,6 +45,7 @@ class Rabbit {
             thirst = t;
             age = a;
             pregnancy = p;
+            colorpassdown = cp;
             dob = bday;
             y = yco;
             x = xco;
@@ -53,6 +55,10 @@ class Rabbit {
 };
 
 extern int numrabbits;
+extern int numfemales;
+extern int nummales;
+extern int numyellow;
+extern int numwhite;
 // [numrows][numcols]
 extern land terrain[HEIGHT][WIDTH];
 extern Rabbit* rabbits[HEIGHT][WIDTH];
