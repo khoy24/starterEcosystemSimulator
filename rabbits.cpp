@@ -54,6 +54,11 @@ void spawnRabbits(){
             delete rabbits[y][x];
             rabbits[y][x] = new Rabbit(randcolor, randgender, 1.0, 1, 'R', 100, 100, randage, 0, 0, 0, y, x);
             rabbitlist.push_back(rabbits[y][x]);
+            if (randgender=='M'){
+                nummales ++;
+            } else {
+                numfemales++;
+            }
             numrabbits ++;
         }
     }
