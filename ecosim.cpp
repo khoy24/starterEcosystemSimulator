@@ -358,7 +358,7 @@ void plotgender() {
     }
 
     //add title
-    mvprintw(0, 35, "Rabbit Gendersp graphed over time      (esc to go back)");
+    mvprintw(0, 35, "Rabbit Genders graphed over time      (esc to go back)");
     //add y-axis labels
     int count = 0;
     for (int i : yaxismarks){
